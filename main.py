@@ -59,7 +59,7 @@ def get_api_data(ticker: str, date: str) -> Tuple[List[str], str]:
         for insight in insights:
             if insight['ticker'] == ticker:
                 sentiment = insight['sentiment']
-                sentiment_reasoning = insight['sentiment_reasoning']
+                sentiment_reasoning = insight['sentiment_reasoning'].replace('\t', '   ')
                 break
         if sentiment:
             line = f'{ticker}\t{published_utc}\t{sentiment}\t{sentiment_reasoning}'
@@ -80,4 +80,5 @@ if __name__ == '__main__':
                     sleep(12)
                     if api_last_published_utc == last_run_published_utc:
                         break
+                    f.write('\n')
                     last_run_published_utc = api_last_published_utc
