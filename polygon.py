@@ -65,7 +65,7 @@ def get_ticker_news(ticker: str, date: str) -> List[dict]:
             r = polygon_request(url)
             data = r.json()
             new_articles = data['results']
-            articles + new_articles
+            articles += new_articles
             url = data['next_url']
     finally:
         return articles
