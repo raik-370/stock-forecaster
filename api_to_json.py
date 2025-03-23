@@ -8,6 +8,7 @@ using the Polygon API, and writes the articles to individual JSON files in the '
 Arguments:
     -e, --skip-empty: If specified, skip tickers whose JSON files are empty.
     -n, --skip-new: If specified, skip tickers whose JSON files do not already exist.
+    -t, --skip-threshold: If specified, skip tickers whose JSON files have fewer entries than the given threshold.
 
 Functions:
     main: The main function that orchestrates reading tickers, fetching news articles, and writing them to files.
