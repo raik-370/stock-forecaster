@@ -26,6 +26,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser('api_to_json')
     parser.add_argument('-e', '--skip-empty', help="If ticker's json file is empty skip checking the API", action='store_true')
     parser.add_argument('-n', '--skip-new', help="If ticker's json file doesn't already exist skip it", action='store_true')
+    parser.add_argument('-t', '--skip-threshold', help="If ticker's json file has less than this many entries skip it", type=int)
     args = parser.parse_args()
     
     with open('tickers.txt', 'r', encoding='utf-8') as tickers:
@@ -40,11 +41,15 @@ if __name__ == '__main__':
             with open(f'data/json/{ticker}.json', 'r+') as f:
                 published_utc = '2024-07-01'
                 lines = f.readlines()
+                line_count = len(lines)
                 # Update the file if it already has content and use news after the existing ones
-                if len(lines) > 0:
+                if line_count >= args.skip_threshold:
                     last_line = lines[-1]
                     last_json = json.loads(last_line)
                     published_utc = last_json['published_utc']
+                elif args.skip_threshold:
+                    print(f'Skipping ${ticker} since it only has {line_count} articles')
+                    continue
                 elif args.skip_empty:
                     print(f'Skipping ${ticker} since it is empty')
                     continue
@@ -57,6 +62,7 @@ if __name__ == '__main__':
                     print(f'Found {articles_count} new articles for {ticker}')
                 else:
                     print(f'No new news found for {ticker}')
+                    continue
                 
                 for article in articles:
                     f.write(f'{json.dumps(article)}\n')
