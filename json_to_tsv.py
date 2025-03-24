@@ -28,6 +28,8 @@ import json
 
 from polygon import parse_ticker_article
 
+# Github Copilot used for Docstrings, proofread by Blaine Traudt
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser('json_to_tsv')
     parser.add_argument('-t', '--skip-threshold', help="If ticker's json file has less than this many entries skip it", type=int)

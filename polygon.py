@@ -16,8 +16,7 @@ from time import sleep
 from typing import List
 
 from dotenv import dotenv_values
-import requests
-from requests import Response
+from requests import get, Response
 
 API_KEY = dotenv_values('.env').get('API_KEY')
 
@@ -33,7 +32,7 @@ def polygon_request(url: str) -> Response:
     Raises:
         requests.exceptions.RequestException: If an error occurs during the request.
     """
-    r = requests.get(f'{url}&apiKey={API_KEY}', timeout=12)
+    r = get(f'{url}&apiKey={API_KEY}', timeout=12)
     # Rate limiting logic
     if r.status_code != 200:
         if r.status_code == 429:

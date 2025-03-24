@@ -22,6 +22,7 @@ from pathlib import Path
 
 from polygon import get_ticker_news
 
+# Github Copilot used for Docstrings, proofread by Blaine Traudt
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser('api_to_json')
@@ -35,8 +36,8 @@ if __name__ == '__main__':
             ticker = ticker.rstrip()
             
             if args.skip_new:
-                ticker_json = Path(f'data/json/{ticker}.json')
-                if not ticker_json.is_file():
+                ticker_file = Path(f'data/json/{ticker}.json')
+                if not ticker_file.is_file():
                     print(f'Skipping ${ticker} since it is new')
             
             with open(f'data/json/{ticker}.json', 'r+') as f:
