@@ -37,7 +37,8 @@ if __name__ == '__main__':
         for ticker in tickers:
             ticker = ticker.rstrip()
             with open(f'data/json/{ticker}.json', 'r') as articles:
-                articles_count = len(articles.readlines())
+                articles_lines = articles.readlines()
+                articles_count = len(articles_lines)
                 if args.skip_threshold and articles_count < args.skip_threshold:
                     print(f'Skipping ${ticker} since it only has {articles_count} articles')
                     continue
@@ -46,7 +47,7 @@ if __name__ == '__main__':
                 with open(f'data/tsv/{ticker}.tsv', 'w', encoding='utf-8') as f:
                     f.write('ticker\tpublished_utc\tpublisher\ttitle\tsentiment\tsentiment_reasoning\n')
                     
-                    for article in articles:
+                    for article in articles_lines:
                         line = parse_ticker_article(ticker, json.loads(article))
                         if line:
                             f.write(line)
