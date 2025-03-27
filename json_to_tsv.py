@@ -34,21 +34,21 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser('json_to_tsv')
     parser.add_argument('-t', '--skip-threshold', help="If ticker's json file has less than this many entries skip it", type=int)
     args = parser.parse_args()
-    
+
     with open('tickers.txt', 'r', encoding='utf-8') as tickers:
         for ticker in tickers:
             ticker = ticker.rstrip()
-            with open(f'data/json/{ticker}.json', 'r') as articles:
+            with open(f'data/json/{ticker}.json', 'r', encoding='utf-8') as articles:
                 articles_lines = articles.readlines()
                 articles_count = len(articles_lines)
                 if args.skip_threshold and articles_count < args.skip_threshold:
                     print(f'Skipping ${ticker} since it only has {articles_count} articles')
                     continue
                 print(f'Processing ${ticker}')
-                    
+
                 with open(f'data/tsv/{ticker}.tsv', 'w', encoding='utf-8') as f:
                     f.write('ticker\tpublished_utc\tpublisher\ttitle\tsentiment\tsentiment_reasoning\n')
-                    
+
                     for article in articles_lines:
                         line = parse_ticker_article(ticker, json.loads(article))
                         if line:
