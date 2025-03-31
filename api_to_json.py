@@ -6,6 +6,7 @@ The module reads a list of stock tickers from 'tickers.txt', fetches news articl
 using the Polygon API, and writes the articles to individual JSON files in the 'data/json' directory.
 
 Arguments:
+    -v, --verbose: If specified, if ticker is skipped, output that it was skipped to console.
     -e, --skip-empty: If specified, skip tickers whose JSON files are empty.
     -n, --skip-new: If specified, skip tickers whose JSON files do not already exist.
     -t, --skip-threshold: If specified, skip tickers whose JSON files have fewer entries than the given threshold.
@@ -26,6 +27,7 @@ from polygon import get_ticker_news
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser('api_to_json')
+    parser.add_argument('-v', '--verbose', help="If ticker is skipped, output that it was skipped to console", action='store_true')
     parser.add_argument('-e', '--skip-empty', help="If ticker's json file is empty skip checking the API", action='store_true')
     parser.add_argument('-n', '--skip-new', help="If ticker's json file doesn't already exist skip it", action='store_true')
     parser.add_argument('-t', '--skip-threshold', help="If ticker's json file has less than this many entries skip it", type=int)
@@ -51,10 +53,12 @@ if __name__ == '__main__':
                         last_json = json.loads(last_line)
                         published_utc = last_json['published_utc']
                 elif args.skip_threshold:
-                    print(f'Skipping ${ticker} since it only has {line_count} articles')
+                    if args.verbose:
+                        print(f'Skipping ${ticker} since it only has {line_count} articles')
                     continue
                 elif args.skip_empty:
-                    print(f'Skipping ${ticker} since it is empty')
+                    if args.verbose:
+                        print(f'Skipping ${ticker} since it is empty')
                     continue
 
                 print(f'Querying Polygon for news on ${ticker}')
@@ -62,9 +66,9 @@ if __name__ == '__main__':
 
                 articles_count = len(articles)
                 if articles_count > 0:
-                    print(f'Found {articles_count} new articles for {ticker}')
+                    print(f'Found {articles_count} new articles for ${ticker}')
                 else:
-                    print(f'No new news found for {ticker}')
+                    print(f'No new news found for ${ticker}')
                     continue
 
                 for article in articles:
