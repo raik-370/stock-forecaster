@@ -12,6 +12,7 @@ Functions:
     parse_ticker_news(ticker: str, articles: dict) -> List[str]:
         Parses the fetched news articles to extract relevant information such as publication date, sentiment, and sentiment reasoning.
 """
+from datetime import datetime, timezone
 from time import sleep
 from typing import List
 
@@ -96,3 +97,39 @@ def parse_ticker_article(ticker: str, article: str) -> str:
     if sentiment:
         line = f'{ticker}\t{published_utc}\t{publisher}\t{title}\t{sentiment}\t{sentiment_reasoning}\n'
         return line
+
+def get_ticker_prices(ticker: str, start_date: str, end_date: str) -> List[dict]:
+    """
+    Fetch historical stock prices for a given ticker symbol within a specified date range.
+    This function sends a request to the Polygon API to retrieve daily aggregated stock price data
+    for the provided ticker symbol between the start and end dates. The data includes open, high, low,
+    close prices, volume, volume-weighted average price, and the number of trades for each day.
+    Args:
+        ticker (str): The ticker symbol for which to fetch historical stock prices.
+        start_date (str): The start date in 'YYYY-MM-DD' format for the price data.
+        end_date (str): The end date in 'YYYY-MM-DD' format for the price data.
+    Returns:
+        List[dict]: A list of dictionaries, each containing the stock price data for a specific day.
+    """
+    BASE_URL = 'https://api.polygon.io/v2/aggs/ticker'
+    url = f'{BASE_URL}/{ticker}/range/1/day/{start_date}/{end_date}?adjusted=true&sort=asc&limit=50000'
+    r = polygon_request(url)
+    data = r.json()
+    stock_data: list = data['results']
+
+    # Translate stock data to sane words
+    translated_data = []
+    for entry in stock_data:
+        utc_date = datetime.fromtimestamp(entry['t'] / 1000, tz=timezone.utc).strftime('%Y-%m-%d')
+        translated_entry = {
+            'date': utc_date,
+            'open': entry['o'],
+            'high': entry['h'],
+            'low': entry['l'],
+            'close': entry['c'],
+            'volume': entry['v'],
+            'volume_weighted': entry['vw'],
+            'trades': entry['n']
+        }
+        translated_data.append(translated_entry)
+    return translated_data
