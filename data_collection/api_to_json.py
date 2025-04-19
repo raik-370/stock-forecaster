@@ -1,21 +1,26 @@
 #!/usr/bin/env python3
 """
-This module fetches news articles for a list of stock tickers and saves them as JSON files.
+This script fetches news articles and optionally stock data for a list of stock tickers, saving them as JSON files.
 
-The module reads a list of stock tickers from 'tickers.txt', fetches news articles for each ticker
+The script reads a list of stock tickers from 'tickers.txt', fetches news articles for each ticker
 using the Polygon API, and writes the articles to individual JSON files in the 'data/news/json' directory.
+If the `--stock-data` flag is provided, it also fetches stock price data and saves it to 'data/trades/json'.
 
 Arguments:
-    -v, --verbose: If specified, if ticker is skipped, output that it was skipped to console.
-    -e, --skip-empty: If specified, skip tickers whose JSON files are empty.
-    -n, --skip-new: If specified, skip tickers whose JSON files do not already exist.
-    -t, --skip-threshold: If specified, skip tickers whose JSON files have fewer entries than the given threshold.
+    -v, --verbose: Output additional information to the console, such as skipped tickers.
+    -e, --skip-empty: Skip tickers whose JSON files are empty.
+    -n, --skip-new: Skip tickers whose JSON files do not already exist.
+    -t, --skip-threshold: Skip tickers whose JSON files have fewer entries than the specified threshold.
+    -s, --stock-data: Fetch and save stock price data for tickers with new articles.
 
 Functions:
-    main: The main function that orchestrates reading tickers, fetching news articles, and writing them to files.
+    main: The main function that orchestrates reading tickers, fetching news articles, fetching stock data (if enabled),
+          and writing the results to files.
 
 Usage:
-    Run this module as a script to fetch news articles for the tickers listed in 'tickers.txt' and save them as JSON files.
+    Run this script to fetch news articles (and optionally stock data) for the tickers listed in 'tickers.txt'.
+    Example:
+        ./api_to_json.py -vent 265 -s
 """
 import argparse
 from datetime import datetime
@@ -44,9 +49,9 @@ if __name__ == '__main__':
                 if not ticker_file.is_file():
                     print(f'Skipping ${ticker} since it is new')
 
-            with open(f'data/news/json/{ticker}.json', 'r+', encoding='utf-8') as news_file, open(f'data/trades/json/{ticker}.json', 'w', encoding='utf8') as trades_file:
-                initial_utc = '2024-07-01'
-                published_utc = initial_utc
+            with open(f'data/news/json/{ticker}.json', 'r+', encoding='utf-8') as news_file:
+                INITIAL_UTC = '2024-07-01'
+                published_utc = INITIAL_UTC
                 lines = news_file.readlines()
                 line_count = len(lines)
                 # Update the file if it already has content and use news after the existing ones
@@ -68,11 +73,12 @@ if __name__ == '__main__':
                 articles = get_ticker_news(ticker, published_utc)
 
                 # Stock data
-                today = datetime.today().strftime('%Y-%m-%d')
-                stock_data = get_ticker_prices(ticker, initial_utc, today)
-                print(stock_data)
-                for day in stock_data:
-                    trades_file.write(f'{json.dumps(day)}\n')
+                if args.stock_data:
+                    with open(f'data/trades/json/{ticker}.json', 'w', encoding='utf8') as trades_file:
+                        today = datetime.today().strftime('%Y-%m-%d')
+                        stock_data = get_ticker_prices(ticker, INITIAL_UTC, today)
+                        for day in stock_data:
+                            trades_file.write(f'{json.dumps(day)}\n')
 
                 articles_count = len(articles)
                 if articles_count > 0:
