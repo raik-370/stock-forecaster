@@ -3,7 +3,7 @@
 This module fetches news articles for a list of stock tickers and saves them as JSON files.
 
 The module reads a list of stock tickers from 'tickers.txt', fetches news articles for each ticker
-using the Polygon API, and writes the articles to individual JSON files in the 'data/json' directory.
+using the Polygon API, and writes the articles to individual JSON files in the 'data/news/json' directory.
 
 Arguments:
     -v, --verbose: If specified, if ticker is skipped, output that it was skipped to console.
@@ -18,10 +18,11 @@ Usage:
     Run this module as a script to fetch news articles for the tickers listed in 'tickers.txt' and save them as JSON files.
 """
 import argparse
+from datetime import datetime
 import json
 from pathlib import Path
 
-from polygon import get_ticker_news
+from polygon import get_ticker_news, get_ticker_prices
 
 # Github Copilot used for Docstrings, proofread by Blaine Traudt
 
@@ -31,6 +32,7 @@ if __name__ == '__main__':
     parser.add_argument('-e', '--skip-empty', help="If ticker's json file is empty skip checking the API", action='store_true')
     parser.add_argument('-n', '--skip-new', help="If ticker's json file doesn't already exist skip it", action='store_true')
     parser.add_argument('-t', '--skip-threshold', help="If ticker's json file has less than this many entries skip it", type=int)
+    parser.add_argument('-s', '--stock-data', help="Whether to grab stock data or not for tickers with new articles", action='store_true')
     args = parser.parse_args()
 
     with open('tickers.txt', 'r', encoding='utf-8') as tickers:
@@ -38,13 +40,14 @@ if __name__ == '__main__':
             ticker = ticker.rstrip()
 
             if args.skip_new:
-                ticker_file = Path(f'data/json/{ticker}.json')
+                ticker_file = Path(f'data/news/json/{ticker}.json')
                 if not ticker_file.is_file():
                     print(f'Skipping ${ticker} since it is new')
 
-            with open(f'data/json/{ticker}.json', 'r+', encoding='utf-8') as f:
-                published_utc = '2024-07-01'
-                lines = f.readlines()
+            with open(f'data/news/json/{ticker}.json', 'r+', encoding='utf-8') as news_file, open(f'data/trades/json/{ticker}.json', 'w', encoding='utf8') as trades_file:
+                initial_utc = '2024-07-01'
+                published_utc = initial_utc
+                lines = news_file.readlines()
                 line_count = len(lines)
                 # Update the file if it already has content and use news after the existing ones
                 if args.skip_threshold is None or line_count >= args.skip_threshold:
@@ -64,6 +67,13 @@ if __name__ == '__main__':
                 print(f'Querying Polygon for news on ${ticker}')
                 articles = get_ticker_news(ticker, published_utc)
 
+                # Stock data
+                today = datetime.today().strftime('%Y-%m-%d')
+                stock_data = get_ticker_prices(ticker, initial_utc, today)
+                print(stock_data)
+                for day in stock_data:
+                    trades_file.write(f'{json.dumps(day)}\n')
+
                 articles_count = len(articles)
                 if articles_count > 0:
                     print(f'Found {articles_count} new articles for ${ticker}')
@@ -72,4 +82,4 @@ if __name__ == '__main__':
                     continue
 
                 for article in articles:
-                    f.write(f'{json.dumps(article)}\n')
+                    news_file.write(f'{json.dumps(article)}\n')
