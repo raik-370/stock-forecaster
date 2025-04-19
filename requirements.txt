@@ -1,0 +1,6 @@
+ipykernel >= 6.29.5, < 7.0.0 
+matplotlib >= 3.10.1, < 4.0.0
+numpy >= 2.2.4, < 3.0.0
+pandas >= 2.2.3, < 3.0.0
+scikit-learn >= 1.6.1, < 2.0.0
+skforecast >= 0.15.1, < 0.16.0
