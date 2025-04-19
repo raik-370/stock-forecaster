@@ -70,12 +70,12 @@ def get_ticker_news(ticker: str, date: str) -> List[dict]:
     finally:
         return articles
 
-def parse_ticker_article(ticker: str, article: str) -> str:
+def parse_ticker_article(ticker: str, article: dict) -> str:
     """
     Parses an article dictionary to extract and format information related to a specific ticker.
     Args:
         ticker (str): The ticker symbol to look for in the article's insights.
-        article (str): A dictionary containing article information, including publication details and insights.
+        article (dict): A dictionary containing article information, including publication details and insights.
     Returns:
         str: A formatted string containing the ticker, publication date, publisher name, title, sentiment, 
              and sentiment reasoning, separated by tabs. Returns None if the ticker is not found in the insights.
@@ -133,3 +133,26 @@ def get_ticker_prices(ticker: str, start_date: str, end_date: str) -> List[dict]
         }
         translated_data.append(translated_entry)
     return translated_data
+
+def parse_ticker_trade(ticker: str, trade: dict) -> str:
+    """
+    Parses a trade dictionary to extract and format information related to a specific ticker.
+    Args:
+        ticker (str): The ticker symbol for the trade.
+        trade (dict): A dictionary containing trade information, including date, open, high, low, close, volume, 
+                      volume-weighted average price, and number of trades.
+    Returns:
+        str: A formatted string containing the ticker, date, open, high, low, close, volume, 
+             volume-weighted average price, and number of trades, separated by tabs.
+    """
+    date = trade['date']
+    open_price = trade['open']
+    high_price = trade['high']
+    low_price = trade['low']
+    close_price = trade['close']
+    volume = trade['volume']
+    volume_weighted = trade['volume_weighted']
+    trades = trade['trades']
+    
+    line = f'{ticker}\t{date}\t{open_price}\t{high_price}\t{low_price}\t{close_price}\t{volume}\t{volume_weighted}\t{trades}\n'
+    return line
